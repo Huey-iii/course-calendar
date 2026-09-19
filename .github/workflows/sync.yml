@@ -2,7 +2,10 @@ name: 课表同步
 
 on:
   schedule:
-    - cron: '0 0-14/2 * * *'
+    # UTC 0~14 点每小时一次 = 北京时间 8:00~22:00 每小时
+    # GitHub 的 schedule 事件在高负载时会延迟甚至直接跳过（实测 4 次计划只跑了 1 次），
+    # 因此用「更高频率」来提高容错率：漏掉一次，一小时后还有下一次。
+    - cron: '0 0-14 * * *'
   workflow_dispatch:
 
 permissions:
