@@ -101,7 +101,8 @@ def main():
 
     china_tz = timezone(timedelta(hours=8))
     now_cn = datetime.now(china_tz)
-    sync_time = f"{now_cn.hour:02d}:{now_cn.minute:02d}"
+    # 带上日期，方便在日历里精准判断数据的新旧
+    sync_time = now_cn.strftime("%Y-%m-%d %H:%M")
 
     ical_data = generate_ical(
         courses, semester_start, school_name=school_name, sync_time=sync_time
