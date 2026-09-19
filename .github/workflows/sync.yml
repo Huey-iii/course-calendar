@@ -1,0 +1,54 @@
+name: 课表同步
+
+on:
+  schedule:
+    - cron: '0 0-14/2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: course-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: 抓取并生成课表
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 抓取并生成课表
+        env:
+          JW_USERNAME: ${{ secrets.JW_USERNAME }}
+          JW_PASSWORD: ${{ secrets.JW_PASSWORD }}
+          JW_BASE_URL: ${{ secrets.JW_BASE_URL }}
+          SEMESTER_START: ${{ vars.SEMESTER_START || '2026-09-07' }}
+          SCHOOL_NAME: ${{ vars.SCHOOL_NAME || '正德职业技术学院' }}
+          MIN_EVENTS: '60'
+        run: python sync.py
+
+      - name: 提交更新
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add calendar.ics
+          if git diff --staged --quiet; then
+            echo "内容无变化，跳过提交"
+          else
+            git commit -m "课表同步 $(TZ=Asia/Shanghai date +'%Y-%m-%d %H:%M')"
+            git push
+          fi
