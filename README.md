@@ -24,7 +24,7 @@ GitHub Actions（每 2 小时，仅白天）
 |---|---|
 | `JW_USERNAME` | 教务系统学号 |
 | `JW_PASSWORD` | 教务系统密码 |
-| `JW_BASE_URL` | 教务系统地址，如 `https://jwxt.zdxy.cn` |
+| `JW_BASE_URL` | 教务系统地址，如 `https://jwxt.example.edu.cn` |
 
 ### Variables（可选，不填则用下面的默认值）
 
