@@ -53,7 +53,7 @@ def main():
 
     username = env("JW_USERNAME", required=True)
     password = env("JW_PASSWORD", required=True)
-    base_url = env("JW_BASE_URL", "https://jwxt.zdxy.cn")
+    base_url = env("JW_BASE_URL", "https://jwxt.example.edu.cn")
     semester_start_str = env("SEMESTER_START", "2026-09-07")
     school_name = env("SCHOOL_NAME", "正德职业技术学院")
     output_file = env("OUTPUT_FILE", "calendar.ics")
