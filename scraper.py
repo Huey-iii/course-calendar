@@ -1,6 +1,6 @@
 """
 正德职业技术学院 正方教务系统 课表爬虫
-教务系统地址: https://jwxt.zdxy.cn
+教务系统地址: https://jwxt.example.edu.cn
 """
 
 import json
@@ -15,7 +15,7 @@ from zf_rsa import encrypt_password
 class JwxtScraper:
     """正方教务系统 V5 爬虫"""
 
-    BASE_URL = "https://jwxt.zdxy.cn"
+    BASE_URL = "https://jwxt.example.edu.cn"
     LOGIN_URL = f"{BASE_URL}/jwglxt/xtgl/login_slogin.html"
     PUBLIC_KEY_URL = f"{BASE_URL}/jwglxt/xtgl/login_getPublicKey.html"
     # 个人课表查询 (gnmkdm=N253508)
