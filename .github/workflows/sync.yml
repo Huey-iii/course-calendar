@@ -58,11 +58,24 @@ jobs:
 
       - name: 推送到云端托管服务
         run: |
-          curl -sS --max-time 60 --retry 3 --retry-delay 10 --retry-all-errors \
+          # ⚠️ 必须显式检查 HTTP 状态码。
+          # 早先直接用 curl：curl 默认不看状态码，云端返回 403 也照样 exit 0，
+          # 于是流水线一片绿灯、手机端却拿不到数据 —— 2026-11-11 断了一周才被发现。
+          status=$(curl -sS --max-time 60 --retry 3 --retry-delay 10 --retry-all-errors \
+            -o /tmp/push_reply.txt -w '%{http_code}' \
             -X POST "https://course-calendar.app.workbuddy.host/update" \
             -H "X-Update-Key: ${{ secrets.UPDATE_KEY }}" \
             -H "Content-Type: text/calendar" \
-            --data-binary @calendar.ics
+            --data-binary @calendar.ics) || true
+
+          echo "推送响应 HTTP $status"
+          head -c 300 /tmp/push_reply.txt 2>/dev/null || true
           echo
+
+          if [ "$status" != "200" ]; then
+            echo "::error::云端订阅服务拒绝接收数据（HTTP $status）。手机端拿不到新课表，请检查订阅服务是否还在线。"
+            exit 1
+          fi
+
           echo "云端状态："
-          curl -sS --max-time 30 "https://course-calendar.app.workbuddy.host/health?cb=$RANDOM"
+          curl -sS -f --max-time 30 "https://course-calendar.app.workbuddy.host/health?cb=$RANDOM"
