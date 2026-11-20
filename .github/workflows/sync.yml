@@ -56,20 +56,45 @@ jobs:
             git push
           fi
 
-      - name: 推送到订阅服务
+      # ── 方式一（默认）：公开仓库 + jsDelivr，零服务器 ──────────────
+      # 仓库公开后，calendar.ics 可直接通过 CDN 订阅，不需要任何服务器：
+      #   https://fastly.jsdelivr.net/gh/<owner>/<repo>@main/calendar.ics
+      # 实测返回 Content-Type: text/calendar，iOS/安卓都认。
+      - name: 刷新订阅地址的 CDN 缓存
+        run: |
+          # jsDelivr 的 CDN 缓存 12 小时（s-maxage=43200）。不主动刷新的话，
+          # 手机最晚要等半天才看到新课表。刷新失败不影响数据本身。
+          PURGE="https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/calendar.ics"
+          echo "刷新缓存: $PURGE"
+          curl -sS --max-time 60 "$PURGE" \
+            || echo "（刷新失败：缓存最迟 12 小时后自然过期）"
+          echo
+
+          SUB_URL="https://fastly.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/calendar.ics"
+          {
+            echo "### 你的日历订阅地址"
+            echo ""
+            echo '```'
+            echo "$SUB_URL"
+            echo '```'
+            echo ""
+            echo "打不开的话，把域名里的 \`fastly\` 换成 \`cdn\` 或 \`gcore\` 试试（内容完全相同）。"
+            echo ""
+            echo "手机：设置 → 日历 → 账户 → 添加账户 → 其他 → 添加已订阅的日历"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ── 方式二（可选）：推送到自建订阅服务 ─────────────────────────
+      # 只有你在 Variables 里配置了 SUBSCRIBE_HOST 才会执行；没配就跳过。
+      - name: 推送到自建订阅服务（可选）
+        if: ${{ vars.SUBSCRIBE_HOST != '' }}
         env:
           SUBSCRIBE_HOST: ${{ vars.SUBSCRIBE_HOST }}
         run: |
-          if [ -z "$SUBSCRIBE_HOST" ]; then
-            echo "::error::还没有配置 SUBSCRIBE_HOST（Settings → Variables），课表无法送达手机。"
-            exit 1
-          fi
-
           URL="${SUBSCRIBE_HOST%/}/update"
 
           # ⚠️ 必须显式检查 HTTP 状态码。
-          # curl 默认不看状态码，云端返回 403 也照样 exit 0，
-          # 于是流水线一片绿灯、手机端却拿不到数据 —— 2026-11-11 断了一周才被发现。
+          # curl 默认不看状态码，返回 403 也照样 exit 0，
+          # 于是流水线一片绿灯、手机端却拿不到数据 —— 2026-11-11 断了一周才发现。
           status=$(curl -sS --max-time 60 --retry 3 --retry-delay 10 --retry-all-errors \
             -o /tmp/push_reply.txt -w '%{http_code}' \
             -X POST "$URL" \
