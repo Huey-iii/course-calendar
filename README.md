@@ -15,6 +15,14 @@
 
 ## 订阅地址
 
+**推荐（GitHub Pages，缓存 10 分钟）：**
+
+```
+https://huey-iii.github.io/course-calendar/calendar.ics
+```
+
+**备用（jsDelivr CDN，缓存 12 小时）：**
+
 ```
 https://fastly.jsdelivr.net/gh/Huey-iii/course-calendar@main/calendar.ics
 ```
@@ -23,7 +31,7 @@ https://fastly.jsdelivr.net/gh/Huey-iii/course-calendar@main/calendar.ics
 
 > 设置 → 日历 → 账户 → 添加账户 → 其他 → **添加已订阅的日历** → 粘贴上面的地址
 
-如果 `fastly.jsdelivr.net` 打不开，把域名换成 `gcore.jsdelivr.net`，内容完全一致。
+两个地址指向同一个文件，订一个即可；也可以两个都订，互为备份。
 
 ---
 
@@ -36,7 +44,8 @@ GitHub Actions（每天 8:00–22:00，每小时一次）
       ↓ 生成 calendar.ics
       ↓ 提交回本仓库
       ↓
-jsDelivr CDN（免费、HTTPS、无需服务器）
+jsDelivr CDN / GitHub Pages
+（免费、HTTPS、无需服务器）
       ↓
 手机日历订阅
 ```
@@ -49,7 +58,7 @@ jsDelivr CDN（免费、HTTPS、无需服务器）
 
 | 限制 | 说明 |
 |---|---|
-| **更新有延迟** | jsDelivr 对分支地址缓存 12 小时，且实测 `purge` 接口刷不掉。加上手机端约 12 小时的轮询，**课表变化最晚可能延后约 24 小时**才可见 |
+| **更新有延迟** | Pages 缓存 10 分钟。备用的 jsDelivr 对分支地址缓存 12 小时，且实测 `purge` 刷不掉。再加上手机端约 12 小时的轮询：**Pages 最晚约 12 小时、jsDelivr 最晚约 24 小时**可见 |
 | 依赖 CDN 可达性 | `cdn.jsdelivr.net` 在部分网络下会 TLS 握手失败，改用 `fastly` / `gcore` 节点即可 |
 | 只支持正方 | 登录流程按正方教务系统 V5 写死；强智 / 青果 / URP 用不了 |
 | 需要公网可访问 | 只能在校园网访问的教务系统跑不通 |
@@ -118,7 +127,7 @@ jsDelivr CDN（免费、HTTPS、无需服务器）
 
 我自己能想到但还没做的方向：
 
-- **改用 GitHub Pages**：缓存约 10 分钟，比 jsDelivr 的 12 小时快得多
+- ~~改用 GitHub Pages~~ ✅ **已采用**：缓存从 12 小时降到 10 分钟
 - **Cloudflare Worker**：可以自定义 `Cache-Control`，还能保持仓库私有
 - **多厂商适配层**：把登录/抓取抽象成插件，支持强智、青果等
 
